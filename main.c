@@ -35,21 +35,12 @@ void init()
 	GIMSK = 0b00100000; // Enable edge interrupt
 	PCMSK = 0b00010000; // Enable edge interrupt on PB4
 
-	// TODO: use timer 0 and cpu clock
-	/// Enable timer on fast peripheral clock
-	// First enable PLL
-	PLLCSR |= (1 << PLLE);
-	// Then wait 100 us for PLL to stabilize
-	_delay_us(100);
-	// Next poll PLOCK until the bit is set
-	while(!(PLLCSR & (1 << PLOCK)));
-	// Then set the PCKE bit
-	PLLCSR |= (1 << PCKE);
-	// Select frequency divisor 32 (2 MHz)
+	/// Enable time on fast peripheral clock
+	// Select frequency divisor 4 (2 MHz)
 	TCCR1 |= (0 << CS13);
-	TCCR1 |= (1 << CS12);
+	TCCR1 |= (0 << CS12);
 	TCCR1 |= (1 << CS11);
-	TCCR1 |= (0 << CS10);
+	TCCR1 |= (1 << CS10);
 
 	// Set pin as input
   DDRB &= ~(1 << DDB4);
@@ -74,7 +65,7 @@ void poll()
 	sei();
 }
 
-/// Parse timings
+/// Parse timings. Returns a 'true' value if the CRC check is correct.
 uint8_t parsetm()
 {
 	uint8_t off = 0; // Message buffer offset
@@ -112,51 +103,10 @@ uint8_t parsetm()
 	}
 }
 
-void ws_init()
-{
-	// Set Ports B0 and B1 as output
-	DDRB |= (1 << DDB0);
-	DDRB |= (1 << DDB1);
-
-	// Set Ports B0 and B1 as high
-	PORTB &= ~(1 << PB0);
-	PORTB &= ~(1 << PB1);
-}
-
-void ws_bit(uint8_t bit)
-{
-	_delay_ms(20);
-	if(bit) PORTB ^= (1 << PB1);
-	else PORTB ^= (1 << PB0);
-}
-
-void ws_byte(uint8_t byte)
-{
-	uint8_t i;
-	for(i = 0; i < 8; i++)
-	{
-		ws_bit(byte & 1);
-		byte >>= 1;
-	}
-}
-
-void ws_bytes(void * data, uint8_t len)
-{
-	uint8_t i;
-	for(i = 0; i < len; i++)
-		ws_byte(*((uint8_t *)(data + i)));
-}
-
 int main(void)
 {
 	// Initialize sensor
 	init();
-	// Initialize WUMPUS protocol
-	ws_init();
-
-	// Light LED
-	DDRB |= (1 << DDB3);
-	PORTB |= (1 << PB3);
 
 	// Send message
   while(1)
@@ -165,9 +115,13 @@ int main(void)
 		poll();
 		// Wait and send results
 		_delay_ms(1000);
-		if(parsetm())	ws_bytes(msg, 4);
+		if(parsetm())
+		{
+			// Readings stored in 'msg'
+			_delay_ms(10);
+		}
 		// Wait for next reading
-		_delay_ms(5000);
+		_delay_ms(10000);
 	}
   return 0;
 }
