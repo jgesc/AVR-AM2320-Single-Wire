@@ -8,6 +8,8 @@ Sensor values are stored in the byte array `msg` following the order they are se
 * The second two bytes contain the temperature (also in Big Endian)
 * The last byte contains the CRC
 
+This has been tested with an ATtiny85, but should work with any other AVR microcontroller that allows 8MHz clock speed.
+
 ## Function overview
 ### init()
 Called at the beginning of your program. It sets the CPU clock at 8MHz (required by the speed the sensor sends the data), sets the pull-up resistor on the PB3 pin an sets it into input mode, and enables edge interrupt for this pin.
