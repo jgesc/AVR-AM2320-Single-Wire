@@ -43,11 +43,11 @@ void init()
 	TCCR1 |= (1 << CS10);
 
 	// Set pin as input
-  DDRB &= ~(1 << DDB4);
-  // Set pull-up
-  PORTB |= (1 << PB4);
+	DDRB &= ~(1 << DDB4);
+	// Set pull-up
+	PORTB |= (1 << PB4);
 	// Wait to stabilize
-  _delay_ms(1000);
+	_delay_ms(1000);
 }
 
 /// Polls sensor data
@@ -109,8 +109,8 @@ int main(void)
 	init();
 
 	// Send message
-  while(1)
-  {
+	while(1)
+	{
 		// Poll sensor
 		poll();
 		// Wait and send results
@@ -123,5 +123,5 @@ int main(void)
 		// Wait for next reading
 		_delay_ms(10000);
 	}
-  return 0;
+	return 0;
 }
